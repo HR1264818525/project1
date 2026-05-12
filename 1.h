@@ -1,11 +1,14 @@
 #define MAXSIZE 100
 #define CODE 6
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <ctype.h>
 
 typedef struct package
 {
     char ID;
-    int phone;
+    char phone[15];
     char name[MAXSIZE];
     char code[CODE];
     int posNum;
@@ -51,16 +54,19 @@ void generateCode(char *code)
 void storePackage()
 {
     char name[MAXSIZE];
+    char phone[15];
     Package *newPac = malloc(sizeof(Package));
     printf("请输入客户的名字：");
-    scanf("%c",name);
+    scanf("%s",name);
     printf("请输入客户的电话号码：");
-    scanf("%d",&newPac->phone);
+    scanf("%s",phone);
 
     printf("包裹存放货架位置：");
     scanf("%d",&newPac->posNum);
     printf("包裹所在在货架位置：");
     scanf("%d",&newPac->shelfNum);
+    strcpy(newPac->name,name);
+    strcpy(newPac->phone,phone);
 
     generateCode(newPac->code);         //随机取件码
 
@@ -71,10 +77,10 @@ void storePackage()
     pos->top = newPac;
     pos->count++;
 
-    printf("包裹已入库");
-    printf("包裹编号为:%d",newPac->ID);
-    printf("姓名：%s",newPac->name);
-    printf("电话：%d",newPac->phone);
-    printf("所在位置：%d号货架 %d号柜",newPac->posNum,newPac->shelfNum);
-    printf("取件码：%s",newPac->code);
+    printf("包裹已入库\n");
+    printf("包裹编号为:%d\n",newPac->ID);
+    printf("姓名：%s\n",newPac->name);
+    printf("电话：%s\n",newPac->phone);
+    printf("所在位置：%d号货架 %d号柜\n",newPac->posNum,newPac->shelfNum);
+    printf("取件码：%s\n",newPac->code);
 }
