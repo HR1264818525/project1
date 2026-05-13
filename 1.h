@@ -84,3 +84,33 @@ void storePackage()
     printf("所在位置：%d号货架 %d号柜\n",newPac->posNum,newPac->shelfNum);
     printf("取件码：%s\n",newPac->code);
 }
+
+
+// 取件操作：输入取件码
+void pickupPackage()
+{
+    char code[CODE];
+    printf("请输入取件码：");
+    scanf("%s",code);
+    Package *current = malloc(sizeof(Package));
+    Package *prev = NULL;
+    for (int i = 0; i < 11; i++)
+    {
+        for (int j = 0; j < 21; j++)
+        {
+            if(shelves[i][j].top!=NULL)
+            {
+                current = &shelves[i][j];
+                if (current->code == code)
+                {
+                    
+                }
+                
+            }
+            
+        }
+        
+    }
+    
+
+}
