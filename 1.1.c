@@ -334,7 +334,7 @@ void freeAll()
 void menu_StorePackage()
 {
     char ID[20];
-    char name[50];
+    char name[50];  
     char phone[15];
     int shelfId, levelNum;
 
