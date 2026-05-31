@@ -4,9 +4,6 @@
 #include <time.h>
 #include "1.1.h"
 
-
-
-
 // 生成6位随机取件码
 void initRandomSeed()
 {
@@ -15,19 +12,11 @@ void initRandomSeed()
 
 void generatePickupCode(char *code)
 {
-    for (int i = 0; i < 5; i++)
-    {
+    for (int i = 0; i < 6; i++) {
         code[i] = '0' + rand() % 10;
     }
-    int sum = 0;
-    for (int i = 0; i < 5; i++)
-    {
-        sum += code[i] - '0';
-    }
-    code[5] = '0' + (sum % 10);
     code[6] = '\0';
 }
-
 // 创建一个新包裹
 Package *createPackage(const char *ID, const char *name, const char *phone)
 {
@@ -155,7 +144,7 @@ ShelfLevel *findLevel(Shelf *shelf, int levelNum)
     return NULL;
 }
 
-// 入库：将包裹添加到指定货架的指定层
+// 入库
 int storePackage(Shelf *shelf, int levelNum, Package *package)
 {
     if (shelf == NULL || package == NULL)
@@ -328,14 +317,13 @@ void freeAll()
     shelfHead = NULL;
 }
 
-// ==================== 用户交互功能 ====================
 
 // 包裹入库功能
 void menu_StorePackage()
 {
     char ID[20];
     char name[50];  
-    char phone[15];
+    char phone[12];
     int shelfId, levelNum;
 
     printf("请输入快递单号：");
