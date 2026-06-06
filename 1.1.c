@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "1.1.h"
+#include "struct.h"
 
 // 生成6位随机取件码
 void initRandomSeed()
@@ -12,7 +12,8 @@ void initRandomSeed()
 
 void generatePickupCode(char *code)
 {
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         code[i] = '0' + rand() % 10;
     }
     code[6] = '\0';
@@ -25,15 +26,15 @@ Package *createPackage(const char *ID, const char *name, const char *phone)
     {
         return NULL;
     }
-    
+
     strcpy(newPackage->ID, ID);
     strcpy(newPackage->name, name);
     strcpy(newPackage->phone, phone);
     generatePickupCode(newPackage->pickupCode);
-    newPackage->storageTime = time(NULL);
+
     newPackage->status = IN_STORAGE;
     newPackage->next = NULL;
-    
+
     return newPackage;
 }
 
@@ -45,13 +46,13 @@ ShelfLevel *createLevel(int levelNum, int capacity)
     {
         return NULL;
     }
-    
+
     newLevel->levelNumber = levelNum;
     newLevel->maxCapacity = capacity;
     newLevel->currentCount = 0;
     newLevel->packageHead = NULL;
     newLevel->next = NULL;
-    
+
     return newLevel;
 }
 
@@ -63,12 +64,12 @@ Shelf *createShelf(int id, int levels)
     {
         return NULL;
     }
-    
+
     newShelf->shelfId = id;
     newShelf->totalLevels = levels;
     newShelf->levelHead = NULL;
     newShelf->next = NULL;
-    
+
     for (int i = 1; i <= levels; i++)
     {
         ShelfLevel *level = createLevel(i, levels);
@@ -86,7 +87,7 @@ Shelf *createShelf(int id, int levels)
             temp->next = level;
         }
     }
-    
+
     return newShelf;
 }
 
@@ -187,31 +188,6 @@ int storePackage(Shelf *shelf, int levelNum, Package *package)
     printf("包裹 %s 已入库到货架%d第%d层，取件码：%s\n",
            package->ID, shelf->shelfId, levelNum, package->pickupCode);
     return 1;
-}
-
-// 根据取件码查找包裹(遍历所有货架)
-Package *findByPickupCode(const char *code)
-{
-    Shelf *shelf = shelfHead;
-    while (shelf != NULL)
-    {
-        ShelfLevel *level = shelf->levelHead;
-        while (level != NULL)
-        {
-            Package *pkg = level->packageHead;
-            while (pkg != NULL)
-            {
-                if (strcmp(pkg->pickupCode, code) == 0)
-                {
-                    return pkg;
-                }
-                pkg = pkg->next;
-            }
-            level = level->next;
-        }
-        shelf = shelf->next;
-    }
-    return NULL;
 }
 
 // 根据手机号查找包裹
@@ -317,12 +293,11 @@ void freeAll()
     shelfHead = NULL;
 }
 
-
 // 包裹入库功能
 void menu_StorePackage()
 {
     char ID[20];
-    char name[50];  
+    char name[50];
     char phone[12];
     int shelfId, levelNum;
 
@@ -337,7 +312,7 @@ void menu_StorePackage()
     Package *newPkg = createPackage(ID, name, phone);
     if (newPkg == NULL)
     {
-        printf("包裹创建失败！\n");
+        printf("包裹创建失败\n");
         return;
     }
 
@@ -358,14 +333,14 @@ void menu_StorePackage()
     Shelf *targetShelf = findShelfById(shelfId);
     if (targetShelf == NULL)
     {
-        printf("货架%d不存在！\n", shelfId);
+        printf("货架%d不存在\n", shelfId);
         free(newPkg);
         return;
     }
 
     if (levelNum < 1 || levelNum > targetShelf->totalLevels)
     {
-        printf("层号无效！\n");
+        printf("层号无效\n");
         free(newPkg);
         return;
     }
@@ -381,39 +356,45 @@ void menu_PickupPackage()
     printf("请输入6位取件码：");
     scanf("%s", pickupCode);
 
-    Package *pkg = findByPickupCode(pickupCode);
-    if (pkg == NULL)
+    Shelf *shelf = shelfHead;
+
+    while (shelf != NULL)
     {
-        printf("未找到取件码为%s的包裹！\n", pickupCode);
-        return;
+        ShelfLevel *level = shelf->levelHead;
+        while (level != NULL)
+        {
+            Package *prev = NULL;
+            Package *pkg = level->packageHead;
+
+            while (pkg != NULL)
+            {
+                if (strcmp(pkg->pickupCode, pickupCode) == 0)
+                {
+                    // 从链表中删除节点
+                    if (prev == NULL)
+                    {
+                        level->packageHead = pkg->next;
+                    }
+                    else
+                    {
+                        prev->next = pkg->next;
+                    }
+
+                    printf("取件成功，包裹信息ID：%s，收件人：%s，联系电话：%s\n", pkg->ID, pkg->name, pkg->phone);
+                    free(pkg);
+                    level->currentCount--;
+
+                    return;
+                }
+                prev = pkg;
+                pkg = pkg->next;
+            }
+            level = level->next;
+        }
+        shelf = shelf->next;
     }
 
-    if (pkg->status == PICK_UP)
-    {
-        printf("该包裹已被取走！\n");
-        return;
-    }
-
-    // 显示包裹信息
-    printf("\n找到包裹：\n");
-    printf("  快递单号：%s\n", pkg->ID);
-    printf("  收件人：%s\n", pkg->name);
-    printf("  联系电话：%s\n", pkg->phone);
-    printf("  入库时间：%s", ctime(&pkg->storageTime));
-
-    char confirm;
-    printf("确认取件？(y/n): ");
-    scanf(" %c", &confirm);
-
-    if (confirm == 'y')
-    {
-        pkg->status = PICK_UP;
-        printf("取件成功！包裹%s已标记为已取件\n", pkg->ID);
-    }
-    else
-    {
-        printf("已取消取件操作\n");
-    }
+    printf("未找到取件码为%s的包裹\n", pickupCode);
 }
 
 // 根据手机号查询包裹
@@ -454,15 +435,15 @@ int main()
     printf("初始化系统...\n");
     Shelf *shelf1 = createShelf(1, 5);
     Shelf *shelf2 = createShelf(2, 5);
-    Shelf *shelf3 = createShelf(3, 5);
-    Shelf *shelf4 = createShelf(4, 5);
-    Shelf *shelf5 = createShelf(5, 5);
+    // Shelf *shelf3 = createShelf(3, 5);
+    // Shelf *shelf4 = createShelf(4, 5);
+    // Shelf *shelf5 = createShelf(5, 5);
     addShelf(shelf1);
     addShelf(shelf2);
-    addShelf(shelf3);
-    addShelf(shelf4);
-    addShelf(shelf5);
-    printf("系统初始化完成！已创建5个默认货架\n");
+    // addShelf(shelf3);
+    // addShelf(shelf4);
+    // addShelf(shelf5);
+    printf("系统初始化完成！已创建2个默认货架\n");
 
     int choice;
     do
